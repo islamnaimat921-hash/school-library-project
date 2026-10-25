@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>نظام حجز مكتبة وأدوات المدرسة | مشروع الثقافة المالية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        lavender: {
+                            light: '#F3E8FF',
+                            DEFAULT: '#E6E6FA',
+                            dark: '#D8BFD8',
+                            accent: '#9333EA',
+                        },
+                        coolpink: {
+                            light: '#FFF0F5',
+                            DEFAULT: '#FFD1DC',
+                            dark: '#FFB6C1',
+                            accent: '#EC4899',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #E6E6FA 0%, #FFD1DC 50%, #F3E8FF 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #1F2937;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: calc(4.5rem + var(--sab));
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding-bottom: 2rem;
+            }
+        }
+
+        /* Ambient Glow Background Effect */
+        .ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .glow-ball-1 {
+            position: absolute;
+            top: -5%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+            filter: blur(40px);
+            animation: float 10s ease-in-out infinite alternate;
+        }
+
+        .glow-ball-2 {
+            position: absolute;
+            bottom: 10%;
+            left: -10%;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+            filter: blur(50px);
+            animation: float 12s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        /* Modern Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 8px 24px -4px rgba(147, 51, 234, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 16px -2px rgba(147, 51, 234, 0.06);
+            transition: all 0.25s ease;
+        }
+
+        .glass-card:active {
+            transform: scale(0.98);
+        }
+
+        @media (min-width: 768px) {
+            .glass-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 24px -4px rgba(147, 51, 234, 0.15);
+                background: rgba(255, 255, 255, 0.9);
+            }
+        }
+
+        .glass-tab-active {
+            background: linear-gradient(135deg, #9333EA, #EC4899);
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+        }
+
+        /* Mobile Bottom Nav Active Style */
+        .bottom-nav-active {
+            color: #9333EA !important;
+            font-weight: 800;
+        }
+        .bottom-nav-active i {
+            transform: translateY(-2px);
+            color: #EC4899;
+        }
+
+        /* Toast Animation */
+        .toast-enter {
+            animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .toast-exit {
+            animation: slideDown 0.3s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(0) scale(1); opacity: 1; }
+            to { transform: translateY(100%) scale(0.9); opacity: 0; }
+        }
+
+        /* Print Settings */
+        @media print {
+            body { background: white !important; color: black !important; padding-bottom: 0 !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .glass-panel, .glass-card { box-shadow: none !important; border: 1px solid #ddd !important; backdrop-filter: none !important; background: white !important; }
+        }
+
+        /* Hide Scrollbar for Clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="p-3 md:p-6">
+
+    <!-- Ambient Glowing Background Bubbles -->
+    <div class="ambient-glow">
+        <div class="glow-ball-1"></div>
+        <div class="glow-ball-2"></div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="fixed top-4 left-4 right-4 md:right-auto md:left-5 md:top-auto md:bottom-5 z-50 flex flex-col gap-2 pointer-events-none no-print"></div>
+
+    <!-- Main App Container -->
+    <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
+
+        <!-- HEADER SECTION (App Header Style for Mobile & Desktop) -->
+        <header class="glass-panel rounded-2xl md:rounded-3xl p-3.5 md:p-6 flex flex-col md:flex-row items-center justify-between gap-3 sticky top-2 md:top-4 z-40 no-print">
+            <div class="flex items-center justify-between w-full md:w-auto">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-lg md:text-2xl shadow-md shadow-purple-500/20 shrink-0">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base md:text-2xl font-black bg-gradient-to-r from-purple-900 to-pink-600 bg-clip-text text-transparent leading-tight">
+                            نظام مكتبة وأدوات المدرسة
+                        </h1>
+                        <p class="text-[11px] md:text-xs text-gray-600 font-bold">مدرسة الأمل • الصف العاشر • الثقافة المالية</p>
+                    </div>
+                </div>
+
+                <!-- Cart Icon Badge for Quick Access (Mobile Only Header) -->
+                <button onclick="switchTab('reservations')" class="md:hidden relative p-2 text-purple-900 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center">
+                    <i class="fa-solid fa-bookmark text-xl"></i>
+                    <span id="mobileHeaderCartCount" class="absolute top-1 right-1 bg-pink-500 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+                </button>
+            </div>
+
+            <!-- Global Search & Stats (Responsive) -->
+            <div class="flex items-center gap-2 md:gap-3 w-full md:w-auto">
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="globalSearchInput" placeholder="بحث عن كتاب أو أداة..." 
+                           class="w-full pl-3 pr-9 py-2 md:py-2.5 rounded-xl md:rounded-2xl border border-white/80 bg-white/80 text-xs md:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition shadow-inner">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3 top-2.5 md:top-3.5 text-gray-400 text-xs md:text-sm"></i>
+                </div>
+                <div class="hidden md:flex items-center gap-2 bg-white/70 px-3 py-2 rounded-2xl border border-white/80 shadow-sm shrink-0">
+                    <span class="text-xs font-bold text-purple-900">حجوزاتي:</span>
+                    <span id="headerCartCount" class="bg-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- DESKTOP NAVIGATION TABS (Hidden on Mobile) -->
+        <nav class="hidden md:flex glass-panel rounded-2xl p-2 gap-2 no-print">
+            <button onclick="switchTab('catalog')" id="tab-btn-catalog" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-gray-700 transition hover:bg-white/50 glass-tab-active min-h-[44px]">
+                <i class="fa-solid fa-shapes"></i> تصفح الكتب والأدوات
+            </button>
+            <button onclick="switchTab('reservations')" id="tab-btn-reservations" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-gray-700 transition hover:bg-white/50 min-h-[44px]">
+                <i class="fa-solid fa-bookmark"></i> حجوزاتي
+                <span id="navCartBadge" class="hidden bg-pink-500 text-white text-xs rounded-full px-2 py-0.2 font-bold">0</span>
+            </button>
+            <button onclick="switchTab('project')" id="tab-btn-project" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-gray-700 transition hover:bg-white/50 min-h-[44px]">
+                <i class="fa-solid fa-clipboard-check text-purple-700"></i> مشروع الثقافة المالية 📋
+            </button>
+        </nav>
+
+        <!-- MAIN CONTENT AREA -->
+        <main>
+
+            <!-- ================= TAB 1: CATALOG ================= -->
+            <section id="tab-catalog" class="tab-content space-y-4 md:space-y-6">
+                <!-- Filter Pills -->
+                <div class="glass-panel rounded-2xl p-3 md:p-4 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                    <span class="text-xs font-bold text-gray-500 shrink-0">التصنيف:</span>
+                    <button onclick="filterCategory('all')" class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-purple-900 shadow-sm border border-purple-200 shrink-0 min-h-[44px]">الكل</button>
+                    <button onclick="filterCategory('كتب')" class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/70 text-gray-600 hover:bg-white shrink-0 min-h-[44px]">كتب وروايات</button>
+                    <button onclick="filterCategory('أدوات')" class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/70 text-gray-600 hover:bg-white shrink-0 min-h-[44px]">أدوات هندسية</button>
+                    <button onclick="filterCategory('أجهزة')" class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white/70 text-gray-600 hover:bg-white shrink-0 min-h-[44px]">أجهزة إلكترونية</button>
+                </div>
+
+                <!-- Catalog Grid (Optimized Mobile Cards) -->
+                <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
+                    <!-- Dynamic Items render here -->
+                </div>
+            </section>
+
+            <!-- ================= TAB 2: MY RESERVATIONS ================= -->
+            <section id="tab-reservations" class="tab-content hidden space-y-4 md:space-y-6">
+                <div class="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 md:mb-6">
+                        <div>
+                            <h2 class="text-base md:text-xl font-extrabold text-purple-950">قائمة الحجوزات النشطة</h2>
+                            <p class="text-[11px] md:text-xs text-gray-600">تتبع حالة المواد الحالية وإلغائها قبل استلامها</p>
+                        </div>
+                        <span id="reservationTotalBadge" class="bg-purple-100 text-purple-900 text-xs font-bold px-3 py-1.5 rounded-xl border border-purple-200 self-start sm:self-auto">
+                            إجمالي الحجوزات: 0
+                        </span>
+                    </div>
+
+                    <div id="reservationsList" class="space-y-3">
+                        <!-- Reservations Dynamic Content -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 3: FINANCIAL LITERACY PROJECT ================= -->
+            <section id="tab-project" class="tab-content hidden space-y-4 md:space-y-6">
+                
+                <!-- Project Documentation Banner -->
+                <div class="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6 bg-gradient-to-r from-purple-900/10 to-pink-900/10 border-2 border-white/90">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                        <div>
+                            <span class="inline-block bg-purple-700 text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full mb-1 shadow">
+                                مادة الثقافة المالية • الصف العاشر
+                            </span>
+                            <h2 class="text-lg md:text-2xl font-black text-gray-800">الوحدة الأولى: إدارة المشروعات</h2>
+                            <p class="text-xs text-gray-600 mt-1">
+                                توثيق خطة المشروع والتطبيقات العملية بالنطاق والجدول الزمني والدروس المستفادة قابل للتعديل والطباعة.
+                            </p>
+                        </div>
+                        <button onclick="window.print()" class="no-print w-full md:w-auto bg-white hover:bg-gray-50 text-purple-900 border border-purple-200 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm min-h-[44px]">
+                            <i class="fa-solid fa-print text-pink-600"></i> طباعة ملف المشروع (PDF)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Project Sub-Tabs Header (Scrollable on Mobile) -->
+                <div class="glass-panel rounded-2xl p-2 flex items-center gap-2 overflow-x-auto no-scrollbar border border-white/80 no-print">
+                    <button onclick="switchProjectSubTab('charter')" id="proj-tab-btn-charter" class="proj-tab-btn px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition bg-white text-purple-900 shadow-sm min-h-[44px]">
+                        1. نموذج بدء المشروع
+                    </button>
+                    <button onclick="switchProjectSubTab('scope')" id="proj-tab-btn-scope" class="proj-tab-btn px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition text-gray-600 hover:bg-white/50 min-h-[44px]">
+                        2. نطاق المشروع والأدوار
+                    </button>
+                    <button onclick="switchProjectSubTab('schedule')" id="proj-tab-btn-schedule" class="proj-tab-btn px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition text-gray-600 hover:bg-white/50 min-h-[44px]">
+                        3. الجدول الزمني (Schedule)
+                    </button>
+                    <button onclick="switchProjectSubTab('monitoring')" id="proj-tab-btn-monitoring" class="proj-tab-btn px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition text-gray-600 hover:bg-white/50 min-h-[44px]">
+                        4. المراقبة والتأمل
+                    </button>
+                </div>
+
+                <!-- PROJECT SUB-TAB CONTENT CONTAINER -->
+                <div class="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6">
+                    
+                    <!-- 1. PROJECT CHARTER -->
+                    <div id="proj-sub-charter" class="proj-sub-content space-y-4 md:space-y-6">
+                        <div class="border-b border-purple-100 pb-3 flex justify-between items-center">
+                            <h3 class="text-base md:text-lg font-bold text-purple-950 flex items-center gap-2">
+                                <i class="fa-solid fa-file-contract text-purple-600"></i> 1. نموذج بدء المشروع (Project Charter)
+                            </h3>
+                            <span class="text-[10px] md:text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-md">حالة: معتمد</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <div class="bg-white/80 rounded-xl md:rounded-2xl p-3.5 border border-white">
+                                <label class="block text-[11px] font-bold text-gray-500 mb-1">اسم المشروع:</label>
+                                <div class="font-bold text-xs md:text-sm text-gray-800" contenteditable="true">نظام حجز مكتبة وأدوات المدرسة الإلكتروني</div>
+                            </div>
+                            <div class="bg-white/80 rounded-xl md:rounded-2xl p-3.5 border border-white">
+                                <label class="block text-[11px] font-bold text-gray-500 mb-1">راعي المشروع (Project Sponsor):</label>
+                                <div class="font-bold text-xs md:text-sm text-gray-800" contenteditable="true">إدارة المدرسة / قسم الثقافة المالية والمكتبة</div>
+                            </div>
+                            <div class="bg-white/80 rounded-xl md:rounded-2xl p-3.5 border border-white">
+                                <label class="block text-[11px] font-bold text-gray-500 mb-1">مدير المشروع (Project Manager):</label>
+                                <div class="font-bold text-xs md:text-sm text-gray-800" contenteditable="true">طالب الصف العاشر (فريق التكنولوجيا والمالية)</div>
+                            </div>
+                            <div class="bg-white/80 rounded-xl md:rounded-2xl p-3.5 border border-white">
+                                <label class="block text-[11px] font-bold text-gray-500 mb-1">مدة تنفيذ المشروع:</label>
+                                <div class="font-bold text-xs md:text-sm text-gray-800" contenteditable="true">3 أسابيع (تخطيط، برمجة، وتجربة)</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/80 rounded-xl md:rounded-2xl p-3.5 border border-white space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-500">هدف المشروع العام:</label>
+                            <p class="text-xs md:text-sm text-gray-700 leading-relaxed" contenteditable="true">
+                                تسهيل واستثمار الموارد المدرسية المتاحة (كتب، أدوات هندسية، أجهزة رقمية) من خلال منصة إلكترونية تفاعلية تتيح للطلبة حجز الأدوات بسهولة، وتقليل الفاقد وتوفير التكاليف المالية على الطلبة وأولياء الأمور.
+                            </p>
+                        </div>
+
+                        <div class="bg-white/80 rounded-xl md:rounded-2xl p-3.5 border border-white space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-500">النتائج الرئيسية المتوقعة (Deliverables):</label>
+                            <ul class="list-disc list-inside text-xs md:text-sm text-gray-700 space-y-1" contenteditable="true">
+                                <li>موقع ويب متكامل سريع الاستجابة بحجم شاشة الموبايل والحاسوب.</li>
+                                <li>قاعدة بيانات تفاعلية لمحتويات المكتبة والأدوات.</li>
+                                <li>نظام حجز فوري يمنع تضارب المواعيد بين الطلبة.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 2. PROJECT SCOPE & ROLES -->
+                    <div id="proj-sub-scope" class="proj-sub-content hidden space-y-4 md:space-y-6">
+                        <div class="border-b border-purple-100 pb-3">
+                            <h3 class="text-base md:text-lg font-bold text-purple-950 flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group text-pink-600"></i> 2. نطاق المشروع وتوزيع الأدوار (Scope & Stakeholders)
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <div class="bg-green-50/80 rounded-xl md:rounded-2xl p-3.5 border border-green-200 space-y-1">
+                                <h4 class="font-bold text-green-900 text-xs md:text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check"></i> ما يشمله نطاق المشروع (In Scope)
+                                </h4>
+                                <ul class="text-xs text-gray-700 space-y-1 list-disc list-inside" contenteditable="true">
+                                    <li>تصميم واجهات المستخدم باللغة العربية متجاوبة مع الهواتف.</li>
+                                    <li>توفير كتالوج للكتب والأدوات الهندسية والأجهزة.</li>
+                                    <li>نظام حجز مبسط وتتبع حالة الحجز.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-red-50/80 rounded-xl md:rounded-2xl p-3.5 border border-red-200 space-y-1">
+                                <h4 class="font-bold text-red-900 text-xs md:text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-xmark"></i> ما لا يشمله نطاق المشروع (Out of Scope)
+                                </h4>
+                                <ul class="text-xs text-gray-700 space-y-1 list-disc list-inside" contenteditable="true">
+                                    <li>الدفع المالي الإلكتروني (الخدمة مجانية).</li>
+                                    <li>التوصيل خارج المبنى المدرسي.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <h4 class="font-bold text-gray-800 text-xs md:text-sm">توزيع الأدوار وأصحاب المصلحة (Stakeholders):</h4>
+                            <div class="overflow-x-auto rounded-xl border border-white">
+                                <table class="w-full text-right text-xs bg-white/90">
+                                    <thead class="bg-purple-100 text-purple-900 font-bold border-b border-purple-200">
+                                        <tr>
+                                            <th class="p-2.5">الفئة / المسمى</th>
+                                            <th class="p-2.5">الاسم / الجهة</th>
+                                            <th class="p-2.5">المسؤوليات الموكلة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-purple-50 text-gray-700">
+                                        <tr>
+                                            <td class="p-2.5 font-bold">راعي المشروع</td>
+                                            <td class="p-2.5">إدارة المدرسة والمعلم</td>
+                                            <td class="p-2.5">الموافقة على النطاق وتوفير التسهيلات</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2.5 font-bold">مدير المشروع</td>
+                                            <td class="p-2.5">قائد فريق العاشر</td>
+                                            <td class="p-2.5">متابعة الجدول الزمني وتوزيع المهام</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2.5 font-bold">فريق التطوير</td>
+                                            <td class="p-2.5">طلبة العاشر البرمجية</td>
+                                            <td class="p-2.5">كتابة الأكواد وتصميم واجهة المستخدم</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. TIMELINE & SCHEDULE -->
+                    <div id="proj-sub-schedule" class="proj-sub-content hidden space-y-4 md:space-y-6">
+                        <div class="border-b border-purple-100 pb-3 flex justify-between items-center">
+                            <h3 class="text-base md:text-lg font-bold text-purple-950 flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-purple-600"></i> 3. الجدول الزمني (Project Schedule)
+                            </h3>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="bg-white/80 p-3.5 rounded-xl border border-white space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="font-bold text-purple-900">1. التخطيط وجمع البيانات</span>
+                                    <span class="bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded text-[10px]">الأسبوع 1</span>
+                                </div>
+                                <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full w-full"></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white/80 p-3.5 rounded-xl border border-white space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="font-bold text-purple-900">2. البرمجة وتصميم للهواتف</span>
+                                    <span class="bg-pink-100 text-pink-800 font-bold px-2 py-0.5 rounded text-[10px]">الأسبوع 2</span>
+                                </div>
+                                <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-pink-400 to-pink-600 h-full w-full"></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white/80 p-3.5 rounded-xl border border-white space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="font-bold text-purple-900">3. التجربة الميدانية والتسليم</span>
+                                    <span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded text-[10px]">الأسبوع 3</span>
+                                </div>
+                                <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-green-400 to-emerald-500 h-full w-4/5"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. MONITORING & LESSONS LEARNED -->
+                    <div id="proj-sub-monitoring" class="proj-sub-content hidden space-y-4 md:space-y-6">
+                        <div class="border-b border-purple-100 pb-3">
+                            <h3 class="text-base md:text-lg font-bold text-purple-950 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-green-600"></i> 4. تقرير المراقبة والدروس المستفادة (Reflection)
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <div class="bg-white/80 p-3.5 rounded-xl border border-white space-y-2">
+                                <h4 class="font-bold text-purple-900 text-xs md:text-sm border-b pb-1.5">أولاً: تقرير مراقبة الأداء</h4>
+                                <div class="space-y-2 text-xs">
+                                    <div>
+                                        <span class="font-bold text-gray-700">التحديات:</span>
+                                        <p class="text-gray-600 mt-0.5" contenteditable="true">ضيق الوقت أثناء الامتحانات وتجميع بيانات الكتب.</p>
+                                    </div>
+                                    <div>
+                                        <span class="font-bold text-gray-700">الإجراءات المتخذة:</span>
+                                        <p class="text-gray-600 mt-0.5" contenteditable="true">تقسيم العمل وإنجازه عبر تطبيقات الهواتف الذكية.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white/80 p-3.5 rounded-xl border border-white space-y-2">
+                                <h4 class="font-bold text-pink-900 text-xs md:text-sm border-b pb-1.5">ثانياً: الدروس المستفادة والتأمل الذاتي</h4>
+                                <ul class="text-xs text-gray-700 space-y-1.5 list-disc list-inside" contenteditable="true">
+                                    <li>التخطيط المبكر يقلل التوتر ويزيد الجودة.</li>
+                                    <li>التكنولوجيا تضمن وصول أكبر واستغلال أمثل للموارد.</li>
+                                    <li>الاستجابة لشاشات الموبايل تزيد تفاعل الطلبة مع المشروع.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- MOBILE BOTTOM NAVIGATION BAR (Android & iOS Responsive) -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-panel border-t border-white/80 px-2 py-1.5 flex items-center justify-around no-print shadow-lg" style="padding-bottom: max(0.4rem, var(--sab));">
+            <button onclick="switchTab('catalog')" id="bnav-catalog" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 text-xs text-gray-500 transition bottom-nav-active min-w-[60px] min-h-[44px] justify-center">
+                <i class="fa-solid fa-shapes text-base"></i>
+                <span class="text-[10px]">المكتبة</span>
+            </button>
+            <button onclick="switchTab('reservations')" id="bnav-reservations" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 text-xs text-gray-500 transition relative min-w-[60px] min-h-[44px] justify-center">
+                <i class="fa-solid fa-bookmark text-base"></i>
+                <span class="text-[10px]">حجوزاتي</span>
+                <span id="bottomNavCartBadge" class="hidden absolute top-1 right-3 bg-pink-500 text-white text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center">0</span>
+            </button>
+            <button onclick="switchTab('project')" id="bnav-project" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 text-xs text-gray-500 transition min-w-[60px] min-h-[44px] justify-center">
+                <i class="fa-solid fa-clipboard-check text-base"></i>
+                <span class="text-[10px]">المشروع 📋</span>
+            </button>
+        </div>
+
+        <!-- FOOTER (Desktop Only) -->
+        <footer class="hidden md:block glass-panel rounded-2xl p-4 text-center text-xs text-gray-600 border border-white/80 no-print">
+            تم التطوير بواسطة طلاب الصف العاشر • تطبيق عملي لدروس وحدة "إدارة المشروعات" - الثقافة المالية 2026 ©
+        </footer>
+    </div>
+
+    <!-- RESERVATION MODAL CONFIRMATION (Optimized for Mobile Screens) -->
+    <div id="reservationModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden no-print">
+        <div class="glass-panel rounded-t-3xl sm:rounded-3xl p-5 max-w-md w-full bg-white/95 shadow-2xl border border-white space-y-4 transform transition-all animate-none sm:animate-bounce-in">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 bg-purple-100 text-purple-700 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-inner">
+                    <i class="fa-solid fa-bookmark"></i>
+                </div>
+                <h3 class="text-base font-bold text-gray-800">تأكيد حجز المادة المدرسية</h3>
+                <p class="text-xs text-gray-500">سيتم إضافة المادة إلى قائمة حجوزاتك النشطة</p>
+            </div>
+
+            <div id="modalItemDetails" class="bg-purple-50/70 p-3.5 rounded-xl border border-purple-100 text-xs space-y-1">
+                <!-- Dynamic Modal Content -->
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-gray-700">اسم الطالب / الشعبة:</label>
+                <input type="text" id="studentNameInput" placeholder="أدخل اسمك والشعبة (مثال: أحمد - 10/أ)" 
+                       class="w-full p-3 rounded-xl border border-purple-200 text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none min-h-[44px]">
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+                <button onclick="confirmReservation()" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-3 rounded-xl text-xs shadow-md active:scale-95 transition min-h-[44px]">
+                    تأكيد الحجز الفوري
+                </button>
+                <button onclick="closeModal()" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-xs hover:bg-gray-300 transition min-h-[44px]">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Data Store
+        const catalogItems = [
+            {
+                id: 1,
+                title: "كتاب الثقافة المالية - الصف العاشر",
+                category: "كتب",
+                typeBadge: "كتاب مدرسي",
+                badgeColor: "bg-purple-100 text-purple-800",
+                author: "وزارة التربية والتعليم",
+                available: 5,
+                icon: "fa-solid fa-book-open text-purple-600",
+                desc: "دليل الطالب المتكامل لمفاهيم إدارة المشروعات والميزانيات."
+            },
+            {
+                id: 2,
+                title: "حقيبة أدوات هندسية متكاملة",
+                category: "أدوات",
+                typeBadge: "أدوات مكتبية",
+                badgeColor: "bg-pink-100 text-pink-800",
+                author: "قسم الرياضيات",
+                available: 8,
+                icon: "fa-solid fa-compass text-pink-600",
+                desc: "تحتوي فرجار، مساطر زوايا، ومسطرة مدرجة رسم دقيق."
+            },
+            {
+                id: 3,
+                title: "حاسبة علمية متطورة (Casio)",
+                category: "أجهزة",
+                typeBadge: "أجهزة إلكترونية",
+                badgeColor: "bg-blue-100 text-blue-800",
+                author: "مختبر العلوم",
+                available: 3,
+                icon: "fa-solid fa-calculator text-blue-600",
+                desc: "مخصصة لحساب الجداول والعمليات الحسابية والمعادلات."
+            },
+            {
+                id: 4,
+                title: "رواية مقدمة في علم الاقتصاد",
+                category: "كتب",
+                typeBadge: "رواية تعليمية",
+                badgeColor: "bg-purple-100 text-purple-800",
+                author: "د. أسامة الشريف",
+                available: 4,
+                icon: "fa-solid fa-book text-purple-600",
+                desc: "شرح مبسط وممتع لأساسيات الاقتصاد والأفكار الريادية."
+            },
+            {
+                id: 5,
+                title: "جهاز عرض بروجيكتر مصغر",
+                category: "أجهزة",
+                typeBadge: "أجهزة إلكترونية",
+                badgeColor: "bg-blue-100 text-blue-800",
+                author: "نادي التكنولوجيا",
+                available: 2,
+                icon: "fa-solid fa-video text-blue-600",
+                desc: "مناسب لعرض مشاريع الطلاب التفاعلية داخل الصفوف."
+            },
+            {
+                id: 6,
+                title: "مجموعة لوحات رسم هندسي (A3)",
+                category: "أدوات",
+                typeBadge: "أدوات مكتبية",
+                badgeColor: "bg-pink-100 text-pink-800",
+                author: "قسم التربية الفنية",
+                available: 10,
+                icon: "fa-solid fa-ruler-combined text-pink-600",
+                desc: "أوراق رسم ومستلزمات لتصميم خطط المشروعات."
+            }
+        ];
+
+        let myReservations = JSON.parse(localStorage.getItem('school_reservations')) || [];
+        let currentSelectedItem = null;
+        let activeCategory = 'all';
+
+        window.onload = function() {
+            renderCatalog();
+            updateReservationsUI();
+            setupEventListeners();
+        };
+
+        function renderCatalog(searchQuery = '') {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = '';
+
+            const filtered = catalogItems.filter(item => {
+                const matchesCat = activeCategory === 'all' || item.category === activeCategory;
+                const matchesSearch = item.title.includes(searchQuery) || item.desc.includes(searchQuery);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-10 glass-panel rounded-2xl">
+                        <i class="fa-solid fa-box-open text-3xl text-gray-300 mb-2"></i>
+                        <p class="text-xs font-bold text-gray-500">لم يتم العثور على نتائج مطابقة</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const isReserved = myReservations.some(r => r.itemId === item.id);
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-4 flex flex-col justify-between space-y-3 border border-white/90 relative overflow-hidden';
+                
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${item.badgeColor}">
+                                ${item.typeBadge}
+                            </span>
+                            <span class="text-[11px] font-bold text-gray-500">
+                                متوفر: <strong class="text-purple-900 font-extrabold">${item.available}</strong>
+                            </span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center shadow-sm shrink-0 text-lg">
+                                <i class="${item.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xs md:text-sm text-gray-800 leading-snug">${item.title}</h3>
+                                <p class="text-[10px] text-gray-500 mt-0.5">${item.author}</p>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-600 leading-relaxed">${item.desc}</p>
+                    </div>
+
+                    <button onclick="openReservationModal(${item.id})" 
+                            ${isReserved ? 'disabled' : ''}
+                            class="w-full py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 min-h-[44px] ${
+                                isReserved 
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md active:scale-95'
+                            }">
+                        <i class="fa-solid ${isReserved ? 'fa-check' : 'fa-calendar-plus'}"></i>
+                        ${isReserved ? 'تم الحجز مسبقاً' : 'حجز الآن'}
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-purple-900', 'shadow-sm', 'border', 'border-purple-200');
+                btn.classList.add('bg-white/70', 'text-gray-600');
+            });
+            event.target.classList.add('bg-white', 'text-purple-900', 'shadow-sm', 'border', 'border-purple-200');
+            event.target.classList.remove('bg-white/70', 'text-gray-600');
+            renderCatalog(document.getElementById('globalSearchInput').value);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('globalSearchInput').addEventListener('input', (e) => {
+                renderCatalog(e.target.value);
+            });
+        }
+
+        // Tab Navigation Switcher (Handles Mobile Bottom Nav + Desktop Nav)
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Desktop active state
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('glass-tab-active'));
+            const desktopBtn = document.getElementById(`tab-btn-${tabName}`);
+            if (desktopBtn) desktopBtn.classList.add('glass-tab-active');
+
+            // Mobile active state
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('bottom-nav-active'));
+            const mobileBtn = document.getElementById(`bnav-${tabName}`);
+            if (mobileBtn) mobileBtn.classList.add('bottom-nav-active');
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function switchProjectSubTab(subTabName) {
+            document.querySelectorAll('.proj-sub-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.proj-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-purple-900', 'shadow-sm');
+                btn.classList.add('text-gray-600');
+            });
+
+            document.getElementById(`proj-sub-${subTabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`proj-tab-btn-${subTabName}`);
+            activeBtn.classList.add('bg-white', 'text-purple-900', 'shadow-sm');
+            activeBtn.classList.remove('text-gray-600');
+        }
+
+        function openReservationModal(itemId) {
+            currentSelectedItem = catalogItems.find(i => i.id === itemId);
+            if (!currentSelectedItem) return;
+
+            const detailsDiv = document.getElementById('modalItemDetails');
+            detailsDiv.innerHTML = `
+                <div class="font-bold text-gray-800 text-xs">${currentSelectedItem.title}</div>
+                <div class="text-[11px] text-gray-600">الفئة: ${currentSelectedItem.typeBadge} • المورد: ${currentSelectedItem.author}</div>
+            `;
+            document.getElementById('reservationModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('reservationModal').classList.add('hidden');
+            currentSelectedItem = null;
+        }
+
+        function confirmReservation() {
+            const studentName = document.getElementById('studentNameInput').value.trim();
+            if (!studentName) {
+                showToast('يرجى إدخال اسم الطالب والشعبة', 'error');
+                return;
+            }
+
+            const newReservation = {
+                id: Date.now(),
+                itemId: currentSelectedItem.id,
+                title: currentSelectedItem.title,
+                category: currentSelectedItem.category,
+                studentName: studentName,
+                date: new Date().toLocaleDateString('ar-EG'),
+                status: 'جاهز للاستلام'
+            };
+
+            myReservations.push(newReservation);
+            localStorage.setItem('school_reservations', JSON.stringify(myReservations));
+
+            closeModal();
+            renderCatalog();
+            updateReservationsUI();
+            showToast(`تم حجز "${newReservation.title}" بنجاح!`, 'success');
+        }
+
+        function cancelReservation(reservationId) {
+            myReservations = myReservations.filter(r => r.id !== reservationId);
+            localStorage.setItem('school_reservations', JSON.stringify(myReservations));
+            renderCatalog();
+            updateReservationsUI();
+            showToast('تم إلغاء الحجز', 'info');
+        }
+
+        function updateReservationsUI() {
+            const count = myReservations.length;
+            document.getElementById('headerCartCount').innerText = count;
+            document.getElementById('mobileHeaderCartCount').innerText = count;
+            document.getElementById('navCartBadge').innerText = count;
+            document.getElementById('bottomNavCartBadge').innerText = count;
+            document.getElementById('reservationTotalBadge').innerText = `إجمالي الحجوزات: ${count}`;
+            
+            // Toggle Badges
+            [document.getElementById('navCartBadge'), document.getElementById('bottomNavCartBadge')].forEach(b => {
+                if (count > 0) b.classList.remove('hidden');
+                else b.classList.add('hidden');
+            });
+
+            const list = document.getElementById('reservationsList');
+            list.innerHTML = '';
+
+            if (count === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fa-solid fa-folder-open text-3xl text-gray-300 mb-2"></i>
+                        <p class="text-xs font-bold text-gray-500">لا توجد لديك حجوزات حالياً</p>
+                    </div>
+                `;
+                return;
+            }
+
+            myReservations.forEach(res => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'bg-white/90 p-3.5 rounded-xl border border-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm';
+                itemCard.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm shrink-0">
+                            <i class="fa-solid fa-bookmark"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-gray-800">${res.title}</h4>
+                            <p class="text-[10px] text-gray-500">طالب الحجز: ${res.studentName} • ${res.date}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                            ${res.status}
+                        </span>
+                        <button onclick="cancelReservation(${res.id})" class="text-[11px] font-bold text-red-600 hover:text-red-800 bg-red-50 px-3 py-1.5 rounded-lg transition min-h-[36px]">
+                            إلغاء الحجز
+                        </button>
+                    </div>
+                `;
+                list.appendChild(itemCard);
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgClass = type === 'success' ? 'bg-purple-900 text-white' : (type === 'error' ? 'bg-red-800 text-white' : 'bg-gray-900 text-white');
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+            toast.className = `toast-enter pointer-events-auto flex items-center gap-2 px-3.5 py-2.5 rounded-xl shadow-xl text-xs font-bold ${bgClass} border border-white/20`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-sm"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
